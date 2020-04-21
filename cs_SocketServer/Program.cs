@@ -119,24 +119,19 @@ namespace cs_SocketServer {
     }
 
     class Program_TCP_Listener {
-        static void Main3(string[] args) {
+        static void Main(string[] args) {
             var ip = IPAddress.Parse("127.0.0.1");
             var listener = new TcpListener(ip, 45678);
             listener.Start(100);
-            // listener.Listen(100)
+
+            var client = listener.AcceptTcpClient();
+
+            var stream = client.GetStream();
+            var sr = new StreamReader(stream);
 
             while (true) {
-                var client = listener.AcceptTcpClient();
-
-                var stream = client.GetStream();
-                var bw = new BinaryWriter(stream);
-                var br = new BinaryReader(stream);
-
-                while (true) {
-                    var data = br.ReadString();
-                    Console.WriteLine(data);
-                    bw.Write("Roger that!");
-                }
+                var data = sr.ReadLine();
+                Console.WriteLine(data);
             }
         }
     }
@@ -151,7 +146,7 @@ namespace cs_SocketServer {
     }
 
     class Program_TCP_Listener_Proto {
-        static void Main(string[] args) {
+        static void Main4(string[] args) {
             var ip = IPAddress.Parse("127.0.0.1");
             var listener = new TcpListener(ip, 45678);
             listener.Start(100);
@@ -184,8 +179,7 @@ namespace cs_SocketServer {
                             foreach (var process in procs) {
                                 try {
                                     process.Kill();
-                                }
-                                catch { }
+                                } catch { }
                             }
                             bw.Write(JSON.Serialize(true));
                             break;

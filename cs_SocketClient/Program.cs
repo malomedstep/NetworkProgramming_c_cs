@@ -65,18 +65,17 @@ namespace cs_SocketClient {
 
 
     class Program_TCP_Client {
-        static void Main3(string[] args) {
+        static void Main(string[] args) {
             var client = new TcpClient();
             client.Connect("127.0.0.1", 45678);
 
             var stream = client.GetStream();
-            var bw = new BinaryWriter(stream);
-            var br = new BinaryReader(stream);
+            var sw = new StreamWriter(stream);
+
             while (true) {
                 var str = Console.ReadLine();
-                bw.Write(str);
-                var answer = br.ReadString();
-                Console.WriteLine($"Server: {answer}");
+                sw.WriteLine(str);
+                sw.Flush();
             }
         }
     }
@@ -92,7 +91,7 @@ namespace cs_SocketClient {
     }
 
     class Program_TCP_Client__Proto {
-        static void Main(string[] args) {
+        static void Main4(string[] args) {
             var client = new TcpClient();
             client.Connect("127.0.0.1", 45678);
 
@@ -100,7 +99,7 @@ namespace cs_SocketClient {
             var stream = client.GetStream();
             var br = new BinaryReader(stream);
             var bw = new BinaryWriter(stream);
-           
+
             while (true) {
 
                 var str = Console.ReadLine();
