@@ -48,7 +48,7 @@ namespace cs_SocketClient {
     }
 
     class Program_UDP {
-        public static void Main2(string[] args) {
+        public static void Main(string[] args) {
             var client = new Socket(
                 AddressFamily.InterNetwork,
                 SocketType.Dgram,
@@ -62,10 +62,16 @@ namespace cs_SocketClient {
             }
         }
     }
-
+    // Physical
+    // Data-link
+    // Network
+    // Transport
+    // Session
+    // Presentation
+    // Application
 
     class Program_TCP_Client {
-        static void Main(string[] args) {
+        static void Main5(string[] args) {
             var client = new TcpClient();
             client.Connect("127.0.0.1", 45678);
 
@@ -152,6 +158,18 @@ namespace cs_SocketClient {
                         break;
                 }
             }
+        }
+    }
+
+    class Program_UDP_Client {
+        static void Main99(string[] args) {
+            var client = new UdpClient();
+            var ep = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 45678);
+            while (true) {
+                var str = Console.ReadLine();
+                var bytes = Encoding.Default.GetBytes(str);
+                client.Send(bytes, bytes.Length, ep);
+            }   
         }
     }
 }

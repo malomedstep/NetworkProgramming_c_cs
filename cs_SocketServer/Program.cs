@@ -97,7 +97,8 @@ namespace cs_SocketServer {
                 ProtocolType.Udp
             );
 
-            var listenerEndPoint = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 45678);
+            var listenerEndPoint = new IPEndPoint(
+                IPAddress.Parse("127.0.0.1"), 45678);
             listener.Bind(listenerEndPoint);
 
             // accept   => client_socket
@@ -106,24 +107,21 @@ namespace cs_SocketServer {
             EndPoint ep = new IPEndPoint(IPAddress.Any, 0); //192.168.0.1:12312
             var segment = new ArraySegment<byte>(buffer);
             while (true) {
-                // int len = listener.ReceiveFrom(buffer, ref ep);
-
-                var resp = await listener.ReceiveFromAsync(segment, SocketFlags.None, ep);
-                var len = resp.ReceivedBytes;
-                var endPoint = resp.RemoteEndPoint;
+                int len = listener.ReceiveFrom(buffer, ref ep);
                 var str = Encoding.Default.GetString(buffer, 0, len);
-                Console.WriteLine($"{endPoint}: {str}");
+                Console.WriteLine($"{ep}: {str}");
 
             }
         }
     }
 
     class Program_TCP_Listener {
-        static void Main(string[] args) {
+        static void Main5(string[] args) {
             var ip = IPAddress.Parse("127.0.0.1");
             var listener = new TcpListener(ip, 45678);
             listener.Start(100);
 
+            // client.GetType() == typeof(TcpClient)
             var client = listener.AcceptTcpClient();
 
             var stream = client.GetStream();
@@ -194,4 +192,16 @@ namespace cs_SocketServer {
         }
     }
 
+
+    class Program_UDP_Client {
+        static void Main(string[] args) {
+            var client = new UdpClient(45678);
+            var ep = new IPEndPoint(IPAddress.Any, 0);
+            while (true) {
+                var bytes = client.Receive(ref ep);
+                var str = Encoding.Default.GetString(bytes);
+                Console.WriteLine(str);
+            }
+        }
+    }
 }
