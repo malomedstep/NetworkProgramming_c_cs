@@ -48,7 +48,7 @@ namespace cs_SocketClient {
     }
 
     class Program_UDP {
-        public static void Main(string[] args) {
+        public static void Main32342(string[] args) {
             var client = new Socket(
                 AddressFamily.InterNetwork,
                 SocketType.Dgram,
@@ -71,18 +71,23 @@ namespace cs_SocketClient {
     // Application
 
     class Program_TCP_Client {
-        static void Main5(string[] args) {
+        static void Main(string[] args) {
             var client = new TcpClient();
             client.Connect("127.0.0.1", 45678);
 
             var stream = client.GetStream();
             var sw = new StreamWriter(stream);
 
-            while (true) {
-                var str = Console.ReadLine();
-                sw.WriteLine(str);
-                sw.Flush();
+            int i = 0;
+            while (i < 5) {
+                //var str = Console.ReadLine();
+                var str = "GET / HTTP/1.1\nHost: localhost\nPort: 45678\n\n";
+                sw.Write(str);
+                i++;
             }
+            // sw.Write('\n');
+            // sw.WriteLine();
+            sw.Flush();
         }
     }
 
@@ -99,65 +104,67 @@ namespace cs_SocketClient {
     class Program_TCP_Client__Proto {
         static void Main4(string[] args) {
             var client = new TcpClient();
-            client.Connect("127.0.0.1", 45678);
+            //client.Connect("127.0.0.1", 45678);
+            client.BeginConnect("127.0.0.1", 45678, ar => {
+                var stream = client.GetStream();
+                var br = new BinaryReader(stream);
+                var bw = new BinaryWriter(stream);
 
+                while (true) {
 
-            var stream = client.GetStream();
-            var br = new BinaryReader(stream);
-            var bw = new BinaryWriter(stream);
+                    var str = Console.ReadLine();
+                    if (str.ToUpper() == "HELP") {
+                        Console.WriteLine("PROCLIST");
+                        Console.WriteLine("KILL <process_name>");
+                        Console.WriteLine("RUN <process_name>");
+                        Console.WriteLine("HELP");
+                        continue;
+                    }
 
-            while (true) {
+                    Command cmd = null;
+                    var input = str.Split(' ');
+                    string responce = null;
+                    switch (input[0]) {
+                        case Command.ProcList:
+                            cmd = new Command {
+                                Text = Command.ProcList
+                            };
+                            bw.Write(JSON.Serialize(cmd));
+                            responce = br.ReadString();
+                            var processes = JSON.Deserialize<string[]>(responce);
+                            foreach (var process in processes) {
+                                Console.WriteLine(process);
+                            }
+                            break;
 
-                var str = Console.ReadLine();
-                if (str.ToUpper() == "HELP") {
-                    Console.WriteLine("PROCLIST");
-                    Console.WriteLine("KILL <process_name>");
-                    Console.WriteLine("RUN <process_name>");
-                    Console.WriteLine("HELP");
-                    continue;
+                        case Command.Kill:
+                            if (input.Length == 1) continue;
+                            cmd = new Command {
+                                Text = Command.Kill,
+                                Param = input[1]
+                            };
+                            bw.Write(JSON.Serialize(cmd));
+                            responce = br.ReadString();
+                            bool success = JSON.Deserialize<bool>(responce);
+                            Console.WriteLine(success ? "Killed" : "Error");
+                            break;
+
+                        case Command.Run:
+                            if (input.Length == 1) continue;
+                            cmd = new Command {
+                                Text = Command.Run,
+                                Param = input[1]
+                            };
+                            bw.Write(JSON.Serialize(cmd));
+                            responce = br.ReadString();
+                            bool succes = JSON.Deserialize<bool>(responce);
+                            Console.WriteLine(succes ? "Started" : "Error");
+                            break;
+                    }
                 }
+            }, null);
 
-                Command cmd = null;
-                var input = str.Split(' ');
-                string responce = null;
-                switch (input[0]) {
-                    case Command.ProcList:
-                        cmd = new Command {
-                            Text = Command.ProcList
-                        };
-                        bw.Write(JSON.Serialize(cmd));
-                        responce = br.ReadString();
-                        var processes = JSON.Deserialize<string[]>(responce);
-                        foreach (var process in processes) {
-                            Console.WriteLine(process);
-                        }
-                        break;
 
-                    case Command.Kill:
-                        if (input.Length == 1) continue;
-                        cmd = new Command {
-                            Text = Command.Kill,
-                            Param = input[1]
-                        };
-                        bw.Write(JSON.Serialize(cmd));
-                        responce = br.ReadString();
-                        bool success = JSON.Deserialize<bool>(responce);
-                        Console.WriteLine(success ? "Killed" : "Error");
-                        break;
-
-                    case Command.Run:
-                        if (input.Length == 1) continue;
-                        cmd = new Command {
-                            Text = Command.Run,
-                            Param = input[1]
-                        };
-                        bw.Write(JSON.Serialize(cmd));
-                        responce = br.ReadString();
-                        bool succes = JSON.Deserialize<bool>(responce);
-                        Console.WriteLine(succes ? "Started" : "Error");
-                        break;
-                }
-            }
         }
     }
 
@@ -169,7 +176,50 @@ namespace cs_SocketClient {
                 var str = Console.ReadLine();
                 var bytes = Encoding.Default.GetBytes(str);
                 client.Send(bytes, bytes.Length, ep);
-            }   
+            }
+        }
+    }
+
+    class Program_UDP_Multicast {
+        static void Main123(string[] args) {
+            var udpClient = new UdpClient();
+            var ip = IPAddress.Parse("224.5.6.7");
+            udpClient.JoinMulticastGroup(ip);
+            var ep = new IPEndPoint(ip, 45678);
+
+            while (true) {
+                var str = Console.ReadLine();
+                var bytes = Encoding.Default.GetBytes(str);
+                udpClient.Send(bytes, bytes.Length, ep);
+            }
+        }
+    }
+
+    class Program_UDP_BroadCast {
+        static void Main123123(string[] args) {
+            Console.WriteLine(IPAddress.Broadcast);
+            var udpListener = new UdpClient(45679);
+            var listenerIp = IPAddress.Parse("255.255.255.255");
+
+            var listenerEp = new IPEndPoint(listenerIp, 0);
+
+            Task.Run(() => {
+                while (true) {
+                    var bytes = udpListener.Receive(ref listenerEp);
+                    var str = Encoding.Default.GetString(bytes);
+                    Console.WriteLine(str);
+                }
+            });
+
+            var udpClient = new UdpClient();
+            var ip = IPAddress.Parse("255.255.255.255");
+            var ep = new IPEndPoint(ip, 45678);
+
+            while (true) {
+                var str = Console.ReadLine();
+                var bytes = Encoding.Default.GetBytes(str);
+                udpClient.Send(bytes, bytes.Length, ep);
+            }
         }
     }
 }

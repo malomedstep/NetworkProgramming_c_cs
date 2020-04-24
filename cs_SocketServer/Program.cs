@@ -116,7 +116,7 @@ namespace cs_SocketServer {
     }
 
     class Program_TCP_Listener {
-        static void Main5(string[] args) {
+        static void Main(string[] args) {
             var ip = IPAddress.Parse("127.0.0.1");
             var listener = new TcpListener(ip, 45678);
             listener.Start(100);
@@ -194,13 +194,58 @@ namespace cs_SocketServer {
 
 
     class Program_UDP_Client {
-        static void Main(string[] args) {
+        static void Main11(string[] args) {
             var client = new UdpClient(45678);
             var ep = new IPEndPoint(IPAddress.Any, 0);
             while (true) {
                 var bytes = client.Receive(ref ep);
                 var str = Encoding.Default.GetString(bytes);
                 Console.WriteLine(str);
+            }
+        }
+    }
+
+    class Program_UDP_Multicast {
+        static void Main1123123(string[] args) {
+            var udpClient = new UdpClient(45678);
+            // 224.0.0.1 - 224.255.255.255
+            var ip = IPAddress.Parse("224.5.6.7");
+            udpClient.JoinMulticastGroup(ip);
+
+            var ep = new IPEndPoint(ip, 0);
+
+            while (true) {
+                var bytes = udpClient.Receive(ref ep);
+                var str = Encoding.Default.GetString(bytes);
+                Console.WriteLine(str);
+            }
+        }
+    }
+
+    class Program_UDP_Broadcast {
+        static void Main123123(string[] args) {
+            Console.WriteLine(IPAddress.Broadcast);
+            var udpListener = new UdpClient(45678);
+            var listenerIp = IPAddress.Parse("255.255.255.255");
+
+            var listenerEp = new IPEndPoint(listenerIp, 0);
+
+            Task.Run(() => {
+                while (true) {
+                    var bytes = udpListener.Receive(ref listenerEp);
+                    var str = Encoding.Default.GetString(bytes);
+                    Console.WriteLine(str);
+                }
+            });
+
+            var udpClient = new UdpClient();
+            var ip = IPAddress.Parse("255.255.255.255");
+            var ep = new IPEndPoint(ip, 45679);
+
+            while (true) {
+                var str = Console.ReadLine();
+                var bytes = Encoding.Default.GetBytes(str);
+                udpClient.Send(bytes, bytes.Length, ep);
             }
         }
     }
