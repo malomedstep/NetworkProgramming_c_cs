@@ -39,7 +39,17 @@ namespace cs_HttpClient {
                 var input = Console.ReadLine();
 
                 if (input == "1") {
-                    response = client.GetAsync("http://localhost:45678").Result;
+                    var url = "http://localhost:45678";
+
+                    Console.WriteLine("Enter date in format 'dd MM yyyy' or empty string to skip");
+                    input = Console.ReadLine(); // "01 01 2020"
+                    if (!string.IsNullOrWhiteSpace(input)) {
+                        var d = input.Split(' ').Select(int.Parse).ToArray(); // [1, 1, 2020]
+                        var dateTime = new DateTime(d[2], d[1], d[0]);
+                        url += $"?registeredFrom={dateTime.ToShortDateString()}";
+                    }
+                    // $"localhost:45678"
+                    response = client.GetAsync(url).Result;
                     json = response.Content.ReadAsStringAsync().Result;
                     var usernames = JSON.Deserialize<string[]>(json);
                     Console.WriteLine("All users:");

@@ -10,6 +10,37 @@ using System.Xml.Serialization;
 using Jil;
 
 namespace cs_SocketClient {
+    class Program_TCP_HTTP {
+        static void Main(string[] args) {
+            var client = new Socket(
+                AddressFamily.InterNetwork,
+                SocketType.Stream,
+                ProtocolType.Tcp
+            );
+
+            var ep = new IPEndPoint(IPAddress.Loopback, 45678);
+            Console.WriteLine("Connecting...");
+            client.Connect(ep); // server accepted connection
+            Console.WriteLine("Connected!");
+            var buffer = new byte[10240];
+
+
+            var text = "GET / HTTP/1.1\nHost: localhost\n\n";
+
+            var bytes = Encoding.Default.GetBytes(text);
+
+            client.Send(bytes);
+            int len = client.Receive(buffer);
+            var str = Encoding.Default.GetString(buffer, 0, len);
+            Console.WriteLine(str);
+
+            client.Close();
+        }
+    }
+
+
+
+
     class Program_TCP {
         static void Main1(string[] args) {
             var client = new Socket(
@@ -71,7 +102,7 @@ namespace cs_SocketClient {
     // Application
 
     class Program_TCP_Client {
-        static void Main(string[] args) {
+        static void Main123523(string[] args) {
             var client = new TcpClient();
             client.Connect("127.0.0.1", 45678);
 
