@@ -83,9 +83,7 @@ namespace cs_HttpServer {
             _listener.Prefixes.Add("http://localhost:45678/");
             _listener.Prefixes.Add("http://127.0.0.1:45678/");
             _listener.Start();
-            AppDomain.CurrentDomain.FirstChanceException += (s, e) => {
-                e.
-            }
+
             while (true) {
                 var context = await _listener.GetContextAsync();
 
